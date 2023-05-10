@@ -4,6 +4,7 @@ import logging
 import os
 import random
 import re
+import sys
 import time
 import traceback
 from logging import LogRecord
@@ -36,7 +37,9 @@ class Logger(metaclass=Singleton):
         console_formatter = AutoGptFormatter("%(title_color)s %(message)s")
 
         # Create a handler for console which simulate typing
-        self.typing_console_handler = TypingConsoleHandler()
+        # self.typing_console_handler = TypingConsoleHandler()
+        self.typing_console_handler = logging.StreamHandler(sys.stdout)
+
         self.typing_console_handler.setLevel(logging.INFO)
         self.typing_console_handler.setFormatter(console_formatter)
 

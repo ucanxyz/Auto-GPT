@@ -1,5 +1,10 @@
 """Main script for the autogpt package."""
+import os
+from pathlib import Path
 import click
+from datetime import datetime 
+import shutil
+import yaml
 
 
 @click.group(invoke_without_command=True)
@@ -15,6 +20,13 @@ import click
     "-C",
     help="Specifies which ai_settings.yaml file to use, will also automatically skip the re-prompt.",
 )
+##########
+@click.option(
+    "--memory-index",
+    "memory_index",
+    help="Specifies a filepath for which JSON file to use",
+)
+##########
 @click.option(
     "-l",
     "--continuous-limit",
@@ -59,6 +71,7 @@ def main(
     gpt3only: bool,
     gpt4only: bool,
     memory_type: str,
+    memory_index: str, 
     browser_name: str,
     allow_downloads: bool,
     skip_news: bool,
@@ -82,6 +95,38 @@ def main(
     from autogpt.prompt import construct_prompt
     from autogpt.utils import get_current_git_branch, get_latest_bulletin
 
+    ####################################
+    if memory_index:
+        # memory_index_filepath = f"{MEMORY_DIR_PATH}/{memory_index}.json"
+        memory_index_filepath = memory_index
+
+    if not os.path.exists(memory_index_filepath):
+        os.makedirs(os.path.dirname(memory_index_filepath), exist_ok=True)
+        with open(memory_index_filepath, "w") as f:
+            f.write("{}") 
+        os.chmod(memory_index_filepath, 0o777) # add write permissions 
+
+    ####################################
+
+    # defaults, if ai_settings file doesn't already exist 
+    TEMPLATE_MEMORY_PATH = Path(__file__).parent.parent.parent / "memory_files/templates"
+    CUSTOM_MEMORY_PATH = Path(__file__).parent.parent.parent / "memory_files/custom_files"
+    default_ai_settings_str = "ai_settings_default"
+    default_ai_settings_filepath = str((TEMPLATE_MEMORY_PATH / f"{default_ai_settings_str}.yaml").absolute()) 
+    
+    # if ai_settings filepath str not given, then placeholder: use the datetime instead of client id 
+    if not ai_settings:
+        datetime = datetime.now().strftime("%Y-%m-%d-%H-%M-%S")
+        ai_settings = str((CUSTOM_MEMORY_PATH / f"{default_ai_settings_str}-{datetime}.yaml").absolute())
+
+    # if given but not exists, this is a new session_id session. 
+    # Copy the default and create a new file for it. 
+    if not os.path.exists(ai_settings):
+        os.makedirs(os.path.dirname(ai_settings), exist_ok=True)
+        shutil.copyfile(default_ai_settings_filepath, ai_settings)
+
+    ####################################
+
     if ctx.invoked_subcommand is None:
         cfg = Config()
         # TODO: fill in llm values here
@@ -96,6 +141,7 @@ def main(
             gpt3only,
             gpt4only,
             memory_type,
+            memory_index_filepath,
             browser_name,
             allow_downloads,
             skip_news,
@@ -136,6 +182,9 @@ def main(
         # Initialize memory and make sure it is empty.
         # this is particularly important for indexing and referencing pinecone memory
         memory = get_memory(cfg, init=True)
+        ##########
+        memory.set_memory_filepath(memory_index_filepath)
+        ##########
         logger.typewriter_log(
             "Using memory of type:", Fore.GREEN, f"{memory.__class__.__name__}"
         )

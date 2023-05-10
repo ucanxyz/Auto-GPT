@@ -6,6 +6,7 @@ from autogpt import utils
 from autogpt.config import Config
 from autogpt.logs import logger
 from autogpt.memory import get_supported_memory_backends
+import os 
 
 CFG = Config()
 
@@ -20,6 +21,7 @@ def create_config(
     gpt3only: bool,
     gpt4only: bool,
     memory_type: str,
+    memory_index_filepath: str, 
     browser_name: str,
     allow_downloads: bool,
     skip_news: bool,
@@ -100,6 +102,9 @@ def create_config(
 
     if ai_settings_file:
         file = ai_settings_file
+        print ("ai settings file", file)
+        # print ("CFG.ai_settings_file", CFG.ai_settings_file)
+        print ('os spath exists?', os.path.exists(file))
 
         # Validate file
         (validated, message) = utils.validate_yaml_file(file)

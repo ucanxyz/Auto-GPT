@@ -134,3 +134,7 @@ class LocalCache(MemoryProviderSingleton):
         Returns: The stats of the local cache.
         """
         return len(self.data.texts), self.data.embeddings.shape
+    
+    def set_memory_filepath(self,memory_index_filepath): 
+        self.filename = memory_index_filepath
+        print (f"LocalCache: set_memory_filepath: {self.filename}")
