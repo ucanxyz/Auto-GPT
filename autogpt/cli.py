@@ -96,6 +96,10 @@ def main(
     from autogpt.utils import get_current_git_branch, get_latest_bulletin
 
     ####################################
+    print ("## Starting main() in cli.py from Auto-GPT ##")
+
+
+    ####################################
     if memory_index:
         # memory_index_filepath = f"{MEMORY_DIR_PATH}/{memory_index}.json"
         memory_index_filepath = memory_index
@@ -127,6 +131,9 @@ def main(
 
     ####################################
 
+    print ("## finished ai_settings setup in cli.py from Auto-GPT ##")
+    
+
     if ctx.invoked_subcommand is None:
         cfg = Config()
         # TODO: fill in llm values here
@@ -146,6 +153,8 @@ def main(
             allow_downloads,
             skip_news,
         )
+        print ("## finished config in cli.py from Auto-GPT ##")
+        
         logger.set_level(logging.DEBUG if cfg.debug_mode else logging.INFO)
         ai_name = ""
         if not cfg.skip_news:
